@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Make a backup of core files once initial setup has been completed
+
+# Script abort on fail
+set -euo pipefail
+
+# Script verify existence of backup
+if [[ ! -f /root/backup.tar ]]; then
+  echo "/root/backup.tar not found: run pizwg-backup on source and copy here"
+  exit 1
+fi
+
+pushd / > /dev/null
+tar xvf /root/backup.tar
+popd > /dev/null
+
+gtlssh-keygen rehash /usr/share/ser2net/auth/pizwg-client/allowed_certs
+
+echo
+echo 'Restore completed; please reboot to ensure correct initialization'
+

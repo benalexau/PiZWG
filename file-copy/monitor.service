@@ -1,0 +1,12 @@
+[Unit]
+Description=Monitors node state to control USB serial port and ser2net
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/monitor.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

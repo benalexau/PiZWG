@@ -1,0 +1,27 @@
+name: PiZWG Raspberry Pi 4
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron:  '0 0 1 * *'
+
+jobs:
+  build:
+    name: PiZWG Raspberry Pi 4 Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Build pizwg-rp4.img
+        run: docker run --rm --privileged -v /dev:/dev -v ${PWD}:/build mkaczanowski/packer-builder-arm build pizwg-rp4.json
+
+      - name: Compress output
+        run: sudo xz -9 pizwg-rp4.img
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: PiZWG Raspberry Pi 4
+          path: pizwg-rp4.img.xz

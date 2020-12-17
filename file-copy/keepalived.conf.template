@@ -1,0 +1,18 @@
+global_defs {
+    router_id _ROUTER_ID_
+    vrrp_skip_check_adv_addr
+    script_user keepalived_script
+    enable_script_security
+}
+
+vrrp_instance pizwg {
+    interface eth0
+    virtual_router_id 254
+    priority _PRIORITY_
+    advert_int 1
+    nopreempt
+    virtual_ipaddress {
+         _VIP_
+    }
+    notify /usr/bin/keepalived-notify.sh
+}

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Make a backup of core files once initial setup has been completed
+
+# Script abort on fail
+set -euo pipefail
+
+# Script verify existence of key file (indicates pizwg-setup has run)
+if [[ ! -f /etc/ser2net/ser2net.key ]]; then
+  echo "/etc/ser2net/ser2net.key not found: run 'pizwg-setup' script"
+  exit 1
+fi
+
+pushd / > /dev/null
+tar cvf /root/backup.tar \
+  etc/ser2net/ser2net.key \
+  etc/ser2net/ser2net.crt \
+  root/pizwg-client.pem \
+  usr/share/ser2net/auth/pizwg-client/allowed_certs/pizwg-client.crt
+
+popd > /dev/null
+
+echo
+echo 'Backup complete. Please copy /root/backup.tar to:'
+echo ' * A safe remote location that is itself regularly backed up' 
+echo ' * Other PiZWG servers (store as /root/backup.tar then run pizwg-restore)'
+echo ' * Socat clients (mutual auth needs included ser2net.crt and pizwg-client.pem)'
+echo

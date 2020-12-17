@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Create server and client certificates on the *first* PiZWG node.
+
+# Script abort on fail
+set -euo pipefail
+
+# Abort if script appears to have previously run
+if [[ -f /etc/ser2net/ser2net.key ]]; then
+  echo "/etc/ser2net/ser2net.key exists; will not execute pizwg-setup again"
+  exit 1
+fi
+
+# Allow certificates until https://en.wikipedia.org/wiki/Year_2038_problem
+# (minus a couple of days to avoid timezone / daylight saving handling)
+DAYS=$(echo $(( ($(date --date="2038-01-17" +%s) - $(date +%s) ) / (60*60*24) )))
+
+# Create a client certificate
+mkdir -p /usr/etc/gtlssh
+gtlssh-keygen --keydays $DAYS --keysize 4096 --keydir /usr/etc/gtlssh --commonname pizwg-client keygen pizwg-client
+mkdir -p /usr/share/ser2net/auth/pizwg-client/allowed_certs
+mv /usr/etc/gtlssh/pizwg-client.crt /usr/share/ser2net/auth/pizwg-client/allowed_certs
+gtlssh-keygen rehash /usr/share/ser2net/auth/pizwg-client/allowed_certs
+
+# Prepare a pizwg-client.pem for use by socat clients
+cat /usr/etc/gtlssh/pizwg-client.key /usr/share/ser2net/auth/pizwg-client/allowed_certs/pizwg-client.crt > /root/pizwg-client.pem
+rm /usr/etc/gtlssh/pizwg-client.key
+
+# Create a server certificate
+gtlssh-keygen --keydays $DAYS --keysize 4096 --keydir /usr/etc/gtlssh --commonname pizwg-server serverkey
+mv /usr/etc/gtlssh/gtlsshd.crt /etc/ser2net/ser2net.crt
+mv /usr/etc/gtlssh/gtlsshd.key /etc/ser2net/ser2net.key
+
+# Complete a backup
+/usr/bin/pizwg-backup
