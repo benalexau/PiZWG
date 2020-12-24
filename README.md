@@ -207,7 +207,7 @@ You should not need to monitor `ser2net.service` as this is only started by the
 There are three open ports bound to network-accessible IPv4 addresses:
 
 * `ser2net` opens port 3333 so a client can connect to the USB serial port
-  (the client must possess the expected client certificate)
+  (the client must authenticate using the expected client certificate)
 * Prometheus Node Exporter opens port 9100 to allow remote HTTP monitoring
 * SSH opens port 22 for administrative control (root password is disabled if
   above setup instructions followed)
@@ -230,15 +230,15 @@ any potential benefits must be considered against that risk.
 
 If later software is required, the recommended upgrade path is to download and
 deploy the latest version of PiZWG, using the `backup.tar` backup and restore
-approach so the certificates can be transferred to the latest version. Deploy
+approach so that certificates can be transferred to the latest version. Deploy
 the new version on a separate SD card from your existing deployment, therefore
 ensuring there is a simple rollback plan for your existing service.
 
 If you wish to attempt a rolling software update without installing a new
-version of PiZWG :
+version of PiZWG:
 
 1. Consider copying the production SD card to a file on another machine (eg
-   `sudo dd if=/dev/sdd of=~/pizwg-prod.img bs=4M && sync`)
+   `sudo dd if=/dev/sdd of=~/pizwg-prod.img bs=4M`)
 2. SSH into the PiZWG server as root
 3. Ensure that you have an up-to-date, remote backup of `backup.tar`
 4. Run `rw` to obtain a read-write file system
