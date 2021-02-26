@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install monitor service dependencies
-pacman -U --noconfirm /tmp/file-copy/uhubctl-2.2.0-1-armv7h.pkg.tar.xz
+pacman -S --noconfirm uhubctl
 pacman -S --noconfirm inotify-tools
 pacman -S --noconfirm python
 
