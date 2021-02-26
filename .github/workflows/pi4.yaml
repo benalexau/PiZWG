@@ -11,6 +11,11 @@ jobs:
     name: PiZWG Raspberry Pi 4 Image
     runs-on: ubuntu-latest
     steps:
+      - name: Set variables
+        id: set-vars
+        run: |
+          echo "::set-output name=date::$(date +'%Y-%m-%d %H:%M')"
+
       - name: Check out repository
         uses: actions/checkout@v2
 
@@ -20,8 +25,23 @@ jobs:
       - name: Compress output
         run: sudo xz -9 pizwg-rp4.img
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+      - name: Remove release
+        uses: kopp/action-delete-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: PiZWG Raspberry Pi 4
-          path: pizwg-rp4.img.xz
+          tag_name: latest
+
+      - name: Upload release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          name: PiZWG ${{ github.run_number }} from ${{ steps.set-vars.outputs.date }}
+          body: |
+            To use this package, please `unxz pizwg-rp4.img.xz` then `dd` to an SD card device.
+          files: |
+            pizwg-rp4.img.xz
+          draft: false
+          prerelease: false

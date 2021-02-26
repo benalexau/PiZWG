@@ -101,11 +101,9 @@ Next prepare the subnet that *PiZWG* host(s) will be deployed on as follows:
 3. Ensure any existing VRRP deployment is not using router ID 254
 
 You will need the *PiZWG* Raspberry Pi image. You can build it yourself using
-the instructions at the bottom of this file, or you can download the latest
-image created by [GitHub Actions](https://github.com/benalexau/PiZWG/actions)
-(these are built once per month and on pushes to this repository). To download
-the GitHub Actions build, select the most recent successful build (identified by
-a green tick) and then download the "PiZWG Raspberry Pi 4" from "Artifacts".
+the instructions at the bottom of this file, or you can [download the latest
+image](https://github.com/benalexau/PiZWG/releases/tag/latest) created by
+[GitHub Actions](https://github.com/benalexau/PiZWG/actions).
 
 Write the image file to an SD card using a command such as:
 
