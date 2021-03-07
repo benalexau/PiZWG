@@ -169,6 +169,9 @@ implements a 300 second inactivity timeout on the client TCP connection. This
 ensures that the *PiZWG* host will reboot even if the remote client failed to
 detect inactivity and drop the TCP connection.
 
+A [Kubernetes example](https://github.com/benalexau/PiZWG/tree/main/k8s) is also
+available.
+
 ## Monitoring
 
 In general you don't need to track which *PiZWG* host is master. However you

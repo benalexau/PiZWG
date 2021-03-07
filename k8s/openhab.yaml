@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openhab
+  namespace: openhab
+  labels:
+    app.kubernetes.io/name: openhab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openhab
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: openhab
+    spec:
+      # Must be able to see host network for mDNS and UPnP
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      containers:
+      - name: openhab
+        image: openhab/openhab:2.5.7
+        env:
+         - name: CRYPTO_POLICY
+           value: "unlimited"
+         # Non-default HTTP(S) ports to reduce conflicts given these bind to k8s node's main IP (hostNetwork)
+         - name: OPENHAB_HTTP_PORT
+           value: "5923"
+         - name: OPENHAB_HTTPS_PORT
+           value: "5924"
+         - name: EXTRA_JAVA_OPTS
+           value: "-Duser.timezone=Australia/Sydney -Xbootclasspath/a:/openhab/conf/automation/jython/jython-standalone-2.7.0.jar -Dpython.home=/openhab/conf/automation/jython -Dpython.path=/openhab/conf/automation/lib/python"
+        resources:
+          limits:
+            memory: 2500M
+          requests:
+            memory: 2500M
+        volumeMounts:
+        - mountPath: /dev
+          name: host-dev
+        - mountPath: /etc/localtime
+          name: timezone
+          readOnly: true
+        - mountPath: /openhab/addons
+          name: openhab
+          subPath: addons
+        - mountPath: /openhab/conf
+          name: openhab
+          subPath: conf
+        - mountPath: /openhab/userdata
+          name: openhab
+          subPath: userdata
+      - name: socat
+        image: alpine/socat:1.7.4.1-r0
+        command: ["socat"]
+        args: ["-d", "-d", "-s", "-T30", "pty,link=/dev/ttyUSB254,raw,user=9001,group=9001,mode=777", "openssl-connect:192.168.50.254:3333,cafile=/etc/certificates/ser2net.crt,commonname=pizwg-server,cert=/etc/certificates/pizwg-client.pem"]
+        volumeMounts:
+        - mountPath: /etc/certificates
+          name: certificates
+          readOnly: true
+        - mountPath: /dev
+          name: host-dev
+      volumes:
+        - name: host-dev
+          hostPath:
+            path: /dev
+            type: Directory
+        - name: certificates
+          secret:
+            secretName: pizwg-certificates
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Australia/Sydney
+        - name: openhab
+          persistentVolumeClaim:
+            claimName: openhab
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openhab
+  namespace: openhab
+  labels:
+    app.kubernetes.io/name: openhab
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn-availability
+  resources:
+    requests:
+      storage: 500Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openhab
+  namespace: openhab
+  labels:
+    app.kubernetes.io/name: openhab
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: openhab
+  ports:
+  - name: openhab
+    port: 80
+    targetPort: 5923
